@@ -11,14 +11,14 @@
 #     - Arch Linux: `sudo pacman -S tk`
 #
 # PyInstaller Command for Linux (Bash/Zsh):
-#   pyinstaller --onefile --noconsole --icon="honeypot.ico" --name="HoneyScan" honeypot_script.py
+#   pyinstaller --onefile --noconsole --icon="icon.ico" --name="HoneyScan" honeypot_script.py
 #
 # PyInstaller Command for Windows (Command Prompt):
-#   pyinstaller --onefile --noconsole --icon="honeypot.ico" --name="HoneyScan" honeypot_script.py
+#   pyinstaller --onefile --noconsole --icon="icon.ico" --name="HoneyScan" honeypot_script.py
 #
 #   - `--onefile`: Creates a single executable file.
 #   - `--noconsole`: Prevents the command-line window from appearing (important for GUI apps).
-#   - `--icon="honeypot.ico"`: (Optional) Adds a custom icon to the executable.
+#   - `--icon="icon.ico"`: (Optional) Adds a custom icon to the executable.
 #   - `--name="HoneyScan"`: Sets the name of the executable file.
 #   - `honeypot_script.py`: The name of this script file.
 #
@@ -86,9 +86,16 @@ class HoneypotGUI:
     """
     def __init__(self, master):
         self.master = master
-        master.title("HoneyScan Logger") # Renamed application title
-        master.geometry("700x450") # Slightly larger to accommodate more info
+        master.title("HoneyScan Logger - FrenzyPenguin Media")
+        master.geometry("700x450")
         master.configure(bg="#2d2d2d")
+        
+        # Set the application icon. The file 'icon.ico' must be in the same directory.
+        try:
+            master.iconbitmap("icon.ico")
+        except:
+            # Handle cases where the icon file isn't found
+            pass
 
         # Configure rows and columns for proper resizing using grid
         self.master.grid_rowconfigure(0, weight=0) # Status label row - fixed height
@@ -184,7 +191,7 @@ class HoneypotGUI:
             
             # Start a thread for each port listener
             for port in PORTS_TO_MONITOR:
-                listener_thread = threading.Thread(target=port_listener, args=(port,)) # Removed geoip_reader argument
+                listener_thread = threading.Thread(target=port_listener, args=(port,))
                 listener_thread.daemon = True
                 listener_thread.start()
 
@@ -224,7 +231,7 @@ class HoneypotGUI:
         self.master.after(100, self.update_log_from_queue)
 
 # --- Honeypot Core Logic ---
-def port_listener(port): # Removed reader argument
+def port_listener(port):
     """
     Listens for incoming connections on a specific port and logs them.
     This function is designed to be run in a separate thread.
@@ -243,10 +250,9 @@ def port_listener(port): # Removed reader argument
                 ip_address = addr[0]
                 port_connected = addr[1]
                 
-                # GeoIP lookup removed
                 log_message = (
                     f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] "
-                    f"Connection on port {port} from {ip_address}:{port_connected}" # Removed geo_info
+                    f"Connection on port {port} from {ip_address}:{port_connected}"
                 )
                 log_queue.put(log_message)
                 conn.close()
