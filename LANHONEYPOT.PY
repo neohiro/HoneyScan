@@ -1,45 +1,41 @@
 #
 # A simple honeypot script with a GUI to log connection attempts on various ports.
-# This script is designed to be packaged into a standalone .exe file using PyInstaller.
+# This script is designed to be packaged into a standalone .exe (Windows) or
+# executable (Linux) file using PyInstaller.
 #
 # Requirements:
 #   - Python 3.x
-#   - `geoip2` library: `pip install geoip2`
-#   - MaxMind GeoLite2 City database: Download 'GeoLite2-City.mmdb' from
-#     https://dev.maxmind.com/geoip/downloads/maxmind-databases/
-#     and place it in the same directory as this script.
+#   - For Tkinter on Linux (if not already installed):
+#     - Debian/Ubuntu: `sudo apt-get install python3-tk`
+#     - Fedora: `sudo dnf install python3-tkinter`
+#     - Arch Linux: `sudo pacman -S tk`
 #
-# PyInstaller Command to create the .exe (updated to include GeoLite2-City.mmdb):
-#   pyinstaller --onefile --noconsole --icon="honeypot.ico" --name="HoneyScan" ^
-#               --add-data "GeoLite2-City.mmdb;." honeypot_script.py
+# PyInstaller Command for Linux (Bash/Zsh):
+#   pyinstaller --onefile --noconsole --icon="honeypot.ico" --name="HoneyScan" honeypot_script.py
+#
+# PyInstaller Command for Windows (Command Prompt):
+#   pyinstaller --onefile --noconsole --icon="honeypot.ico" --name="HoneyScan" honeypot_script.py
+#
 #   - `--onefile`: Creates a single executable file.
-#   - `--noconsole`: Prevents the command-line window from appearing.
+#   - `--noconsole`: Prevents the command-line window from appearing (important for GUI apps).
 #   - `--icon="honeypot.ico"`: (Optional) Adds a custom icon to the executable.
 #   - `--name="HoneyScan"`: Sets the name of the executable file.
-#   - `--add-data "GeoLite2-City.mmdb;."`: Includes the GeoLite2-City.mmdb file
-#     in the root of the executable's temporary directory when run.
 #   - `honeypot_script.py`: The name of this script file.
+#
+# Important Note for Linux:
+#   To listen on ports below 1024 (privileged ports like 20, 21, 22, 23, 25, 80, 443),
+#   you MUST run the HoneyScan executable with `sudo`.
+#   Example: `sudo ./HoneyScan` (after navigating to the dist/ folder)
 #
 
 import socket
 import threading
 import time
 import os
-import sys # Import sys for PyInstaller path handling
-from tkinter import Tk, Text, Button, Label, Scrollbar, Frame, Menu # Import Menu
+import sys
+from tkinter import Tk, Text, Button, Label, Scrollbar, Frame, Menu
 from tkinter.constants import END
 from queue import Queue
-
-try:
-    import geoip2.database
-    from geoip2.errors import AddressNotFoundError
-    GEOIP_AVAILABLE = True
-except ImportError:
-    GEOIP_AVAILABLE = False
-    print("Warning: 'geoip2' library not found. GeoIP lookup will be disabled.")
-except Exception as e:
-    GEOIP_AVAILABLE = False
-    print(f"Warning: Could not load geoip2 database: {e}. GeoIP lookup will be disabled.")
 
 # --- Configuration ---
 # The ports you want to monitor. Expanded to include more commonly targeted services.
@@ -82,10 +78,6 @@ MAX_CONNECTIONS = 5
 log_queue = Queue()
 # A flag to control the state of the honeypot threads.
 is_running = False
-
-# Global GeoIP reader instance
-geoip_reader = None
-GEOIP_DB_PATH = 'GeoLite2-City.mmdb'
 
 # --- GUI Class ---
 class HoneypotGUI:
@@ -181,43 +173,19 @@ class HoneypotGUI:
     def start_honeypot(self):
         """
         Starts the honeypot by creating and starting listener threads.
-        Initializes GeoIP reader if available.
         """
-        global is_running, geoip_reader, GEOIP_AVAILABLE # Added GEOIP_AVAILABLE here
+        global is_running
         if not is_running:
-            # Initialize GeoIP reader
-            if GEOIP_AVAILABLE and geoip_reader is None:
-                try:
-                    # PyInstaller creates a temp directory, so we need to adjust the path
-                    if getattr(sys, 'frozen', False):
-                        # Running in a bundle
-                        base_path = sys._MEIPASS
-                    else:
-                        # Running in a normal Python environment
-                        base_path = os.path.abspath(".")
-                    
-                    db_path = os.path.join(base_path, GEOIP_DB_PATH)
-                    
-                    if os.path.exists(db_path):
-                        geoip_reader = geoip2.database.Reader(db_path)
-                        self.log_message(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] GeoIP database loaded from: {db_path}") # Added timestamp
-                    else:
-                        self.log_message(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] GeoIP database not found at {db_path}. GeoIP lookup disabled.") # Added timestamp
-                        GEOIP_AVAILABLE = False # No need for 'global' here, it's already declared
-                except Exception as e:
-                    self.log_message(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Error loading GeoIP database: {e}. GeoIP lookup disabled.") # Added timestamp
-                    GEOIP_AVAILABLE = False # No need for 'global' here, it's already declared
-
             is_running = True
             self.status_label.config(text="Status: Running...", fg="#4caf50")
             self.start_button.config(state="disabled")
             self.stop_button.config(state="normal")
-            self.log_message(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] HoneyScan started. Listening on ports: {PORTS_TO_MONITOR}") # Added timestamp and app name
+            self.log_message(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] HoneyScan started. Listening on ports: {PORTS_TO_MONITOR}")
             
             # Start a thread for each port listener
             for port in PORTS_TO_MONITOR:
-                listener_thread = threading.Thread(target=port_listener, args=(port, geoip_reader))
-                listener_thread.daemon = True  # Ensure the thread exits with the main program
+                listener_thread = threading.Thread(target=port_listener, args=(port,)) # Removed geoip_reader argument
+                listener_thread.daemon = True
                 listener_thread.start()
 
     def stop_honeypot(self):
@@ -228,13 +196,13 @@ class HoneypotGUI:
         if is_running:
             is_running = False
             self.status_label.config(text="Status: Stopping...", fg="#ffc107")
-            self.log_message(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] HoneyScan stopping...") # Added timestamp and app name
+            self.log_message(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] HoneyScan stopping...")
 
             # Re-enable the start button and disable the stop button
             self.start_button.config(state="normal")
             self.stop_button.config(state="disabled")
             
-            self.status_label.config(text="Status: Stopped", fg="white") # Ensure status updates immediately
+            self.status_label.config(text="Status: Stopped", fg="white")
 
     def log_message(self, message):
         """
@@ -251,21 +219,20 @@ class HoneypotGUI:
             message = log_queue.get()
             self.log_frame.config(state="normal")
             self.log_frame.insert(END, message + "\n")
-            self.log_frame.see(END)  # Auto-scroll to the bottom
+            self.log_frame.see(END)
             self.log_frame.config(state="disabled")
         self.master.after(100, self.update_log_from_queue)
 
 # --- Honeypot Core Logic ---
-def port_listener(port, reader):
+def port_listener(port): # Removed reader argument
     """
-    Listens for incoming connections on a specific port and logs them,
-    including GeoIP information if available.
+    Listens for incoming connections on a specific port and logs them.
     This function is designed to be run in a separate thread.
     """
     global is_running
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.settimeout(1)  # Set a timeout for the accept call
+        s.settimeout(1)
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         s.bind((HOST, port))
         s.listen(MAX_CONNECTIONS)
@@ -276,31 +243,19 @@ def port_listener(port, reader):
                 ip_address = addr[0]
                 port_connected = addr[1]
                 
-                geo_info = "Unknown Location"
-                if GEOIP_AVAILABLE and reader:
-                    try:
-                        response = reader.city(ip_address)
-                        country = response.country.name if response.country else "Unknown Country"
-                        city = response.city.name if response.city else "Unknown City"
-                        geo_info = f"{city}, {country}"
-                    except AddressNotFoundError:
-                        geo_info = "Private/Reserved IP"
-                    except Exception as geo_e:
-                        geo_info = f"GeoIP Error: {geo_e}"
-
+                # GeoIP lookup removed
                 log_message = (
                     f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] "
-                    f"Connection on port {port} from {ip_address}:{port_connected} ({geo_info})"
+                    f"Connection on port {port} from {ip_address}:{port_connected}" # Removed geo_info
                 )
                 log_queue.put(log_message)
                 conn.close()
             except socket.timeout:
-                # This is normal, just check the is_running flag again.
                 pass
             except Exception as e:
                 log_message = f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Error on port {port}: {e}"
                 log_queue.put(log_message)
-                break  # Exit the loop on error
+                break
     except Exception as e:
         log_message = f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Could not start listener on port {port}: {e}"
         log_queue.put(log_message)
@@ -312,4 +267,3 @@ if __name__ == "__main__":
     root = Tk()
     app = HoneypotGUI(root)
     root.mainloop()
-
