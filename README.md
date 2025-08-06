@@ -24,7 +24,6 @@ It simulates **fake vulnerable services** (like SSH, HTTP, FTP), then **logs and
 - 📡 Passive detection of scans and login attempts
 - 📦 Single-file setup (no bloat)
 - 📋 Simple buttons to start and stop service
-- ✉️ Optional email alerts for suspicious behavior
 - 🌐 GeoIP detection.
 - 🧩 Easily extendable service modules (Python)
 
