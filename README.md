@@ -5,6 +5,9 @@ Passive Scanner for Home Networks
 
 ---
 
+<img width="698" height="478" alt="image" src="https://github.com/user-attachments/assets/0bde166c-44bf-41c9-890e-7be8c175a58c" />
+
+
 ### 🎯 What is HoneyScan?
 
 **HoneyScan** is a plug-and-play **honeypot + passive scanner** built for:
