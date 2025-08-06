@@ -42,8 +42,38 @@ except Exception as e:
     print(f"Warning: Could not load geoip2 database: {e}. GeoIP lookup will be disabled.")
 
 # --- Configuration ---
-# The ports you want to monitor.
-PORTS_TO_MONITOR = [21, 22, 23, 25, 80, 135, 443, 445, 3389, 8080]
+# The ports you want to monitor. Expanded to include more commonly targeted services.
+PORTS_TO_MONITOR = [
+    20,  # FTP (Data)
+    21,  # FTP (Control)
+    22,  # SSH
+    23,  # Telnet
+    25,  # SMTP
+    53,  # DNS (TCP/UDP)
+    80,  # HTTP
+    110, # POP3
+    123, # NTP (UDP)
+    135, # DCE/RPC Endpoint Mapper
+    137, # NetBIOS-NS (UDP)
+    138, # NetBIOS-DGM (UDP)
+    139, # NetBIOS-SSN
+    143, # IMAP
+    161, # SNMP (agents) (UDP)
+    162, # SNMP (traps) (UDP)
+    389, # LDAP
+    443, # HTTPS
+    445, # Microsoft-DS (SMB)
+    465, # SMTPS
+    587, # SMTP (submission)
+    636, # LDAPS
+    3306,# MySQL
+    3389,# RDP
+    5060,# SIP (UDP)
+    5432,# PostgreSQL
+    8080,# HTTP Proxy / Alternate HTTP
+    1433,# MSSQL
+    902, # VMware vSphere/ESXi
+]
 # The host IP to bind to. Use '0.0.0.0' to listen on all available network interfaces.
 HOST = '0.0.0.0'
 # Maximum number of concurrent connections for each port.
