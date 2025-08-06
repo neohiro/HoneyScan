@@ -14,7 +14,7 @@ Passive Scanner for Home Networks
 - 🎓 Teachers and students
 - 👩‍💻 Hobbyists curious about network threats
 
-It simulates **fake vulnerable services** (like SSH, HTTP, FTP), then **logs and alerts** you when someone interacts with them — like port scanners, brute-force attempts, or bots.
+It simulates **fake vulnerable services** (like SSH, HTTP, FTP), then **logs and alerts** you when someone interacts with them — like port scanners, brute-force attempts, or bots. Following ports are being monitored:
 
     20,  # FTP (Data)
     21,  # FTP (Control)
