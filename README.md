@@ -57,9 +57,9 @@ It simulates **fake vulnerable services** (like SSH, HTTP, FTP), then **logs and
 - 📡 Passive detection of scans and login attempts
 - 📦 Single-file setup (no bloat)
 - 📋 Simple buttons to start and stop service
-- 🌐 GeoIP detection.
 - 🧩 Easily extendable service modules (Python)
 
+Please run with sudo on Linux to have access to sockets.
 ---
 
 http://frenzypenguin.media
