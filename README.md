@@ -1,7 +1,6 @@
 # 🧪 HoneyScan
-Passive Scanner for Home Networks
 
-> 🐝 Lightweight, beginner-friendly honeypot and passive scanner for your home or lab network. See who’s scanning or snooping—learn cybersecurity by watching in real time.
+🐝 Lightweight, beginner-friendly honeypot and passive scanner for your home or lab network. See who’s scanning or snooping—learn cybersecurity by watching in real time.
 
 ---
 
