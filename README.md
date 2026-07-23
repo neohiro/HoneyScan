@@ -1,4 +1,7 @@
 # 🧪 HoneyScan
+[![Python 3.x](https://img.shields.io/badge/python-3.x-blue.svg)](https://www.python.org/downloads/)
+[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgray.svg)](https://github.com/)
+[![Build Status](https://github.com/neohiro/HoneyScan/actions/workflows/release.yml/badge.svg)](https://github.com/neohiro/HoneyScan/actions)
 
 🐝 Lightweight, beginner-friendly honeypot and passive scanner for your home or lab network. See who’s scanning or snooping—learn cybersecurity by watching in real time.
 
