@@ -45,19 +45,19 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: |
           pyinstaller --noconfirm --onedir --windowed --icon=icon.ico HoneyScan.PY
-          Compress-Archive -Path "dist\HoneyScan\*" -DestinationPath "HoneyScan-Windows.zip" -Force
+          Compress-Archive -Path "dist\HoneyScan" -DestinationPath "HoneyScan-Windows.zip" -Force
 
       - name: Build macOS Executable
         if: matrix.os == 'macos-latest'
         run: |
-          pyinstaller --noconfirm --onedir --windowed --icon=icon.ico HoneyScan.PY
+          pyinstaller --noconfirm --onedir --windowed --icon=icon.icns HoneyScan.PY
           cd dist
           zip -r ../HoneyScan-macOS.zip HoneyScan.app
 
       - name: Build Linux Executable
         if: matrix.os == 'ubuntu-latest'
         run: |
-          pyinstaller --noconfirm --onedir --windowed --icon=icon.ico HoneyScan.PY
+          pyinstaller --noconfirm --onedir --windowed --icon=icon.png HoneyScan.PY
           cd dist
           zip -r ../HoneyScan-Linux.zip HoneyScan
 
